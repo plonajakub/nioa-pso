@@ -6,7 +6,7 @@
 
 class DataLoader {
 public:
-    static std::vector<MKPInstance> load_mknap2(const std::string &path);
+    static std::vector<MKPInstance> load_mknap2(const std::string &path, const std::vector<int> &instance_ids = {});
 };
 
 

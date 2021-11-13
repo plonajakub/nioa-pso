@@ -7,7 +7,7 @@ void ignore_lines(std::ifstream &input, int n_lines) {
     }
 }
 
-std::vector<MKPInstance> DataLoader::load_mknap2(const std::string &path) {
+std::vector<MKPInstance> DataLoader::load_mknap2(const std::string &path, const std::vector<int> &instance_ids) {
     std::ifstream ifs(path);
     std::vector<MKPInstance> mknap2_instances;
 
@@ -41,6 +41,14 @@ std::vector<MKPInstance> DataLoader::load_mknap2(const std::string &path) {
         ignore_lines(ifs, 7);
         ++id;
         mkp_instance = MKPInstance();
+    }
+
+    if (!instance_ids.empty()) {
+        std::vector<MKPInstance> selected_instances;
+        for (auto iid : instance_ids) {
+            selected_instances.push_back(mknap2_instances[iid]);
+        }
+        return selected_instances;
     }
     return mknap2_instances;
 }
