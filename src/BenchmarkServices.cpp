@@ -15,9 +15,8 @@ using std::endl;
 void BenchmarkServices::run() {
     auto mkp_instances = DataLoader::load_mknap2("../data/mknap2.txt", {0, 1, 2, 3, 4, 5, 6, 7, 8, 19, 47});
 
-    auto simulated_annealing_time_data = benchmark_algorithm(mkp_instances, Solver::simulated_annealing,
-                                                             "simulated_annealing");
-    save_time_data("simulated_annealing", "Simulated Annealing", simulated_annealing_time_data);
+    auto greedy_time_data = benchmark_algorithm(mkp_instances, Solver::greedy, "greedy");
+    save_time_data("greedy", "Greedy Algorithm", greedy_time_data);
 
     auto particle_swarm_time_data = benchmark_algorithm(mkp_instances, Solver::particle_swarm, "particle_swarm");
     save_time_data("particle_swarm", "Particle Swarm Optimization", particle_swarm_time_data);
@@ -51,10 +50,10 @@ std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vec
         auto default_precision = cout.precision();
         cout.precision(2);
         cout << endl;
-        cout << "Elapsed time [ms]: " << Utils::mean(instance_bdata.times) << " +- " << Utils::stddev(instance_bdata.times)
-             << endl;
+        cout << "Elapsed time [ms]: " << Utils::mean(instance_bdata.times) << " +- "
+             << Utils::stddev(instance_bdata.times) << endl;
         std::vector<long double> relative_errors;
-        for (const auto &el : instance_bdata.best_found_solutions) {
+        for (const auto &el: instance_bdata.best_found_solutions) {
             relative_errors.push_back(Utils::relative_error(instance_bdata.known_optimum, el));
         }
         cout.precision(6);

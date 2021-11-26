@@ -6,7 +6,7 @@
 
 class Solver {
 public:
-    static MKPSolution simulated_annealing(const MKPInstance &mkp_instance, const SolverSettings &settings);
+    static MKPSolution greedy(const MKPInstance &mkp_instance, const SolverSettings &settings);
     static MKPSolution particle_swarm(const MKPInstance &mkp_instance, const SolverSettings &settings);
 };
 

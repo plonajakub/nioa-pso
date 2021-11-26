@@ -1,7 +1,7 @@
 #include "Solver.h"
 #include <vector>
 
-MKPSolution Solver::simulated_annealing(const MKPInstance &mkp_instance, const SolverSettings &settings) {
+MKPSolution Solver::greedy(const MKPInstance &mkp_instance, const SolverSettings &settings) {
     return {std::vector<bool>(mkp_instance.n_objects, false), -1};
 }
 
