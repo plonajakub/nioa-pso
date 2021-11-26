@@ -3,7 +3,6 @@
 
 #include <functional>
 #include <vector>
-#include <map>
 #include <string>
 
 #include "mkp.h"
@@ -29,7 +28,7 @@ public:
 
 private:
 
-    static const int TEST_REPETITIONS_NUMBER = 5;
+    static const int TEST_REPETITIONS_NUMBER = 30;
 
     static std::vector<BenchmarkData> benchmark_algorithm(const std::vector<MKPInstance> &mkp_instances,
                                                           MKPSolution (*mkp_algorithm)(const MKPInstance &mkp_instance,
@@ -39,8 +38,7 @@ private:
     static double count_time(const std::function<void()> &function);
 
 
-    static void save_time_data(const std::string &file_name, const std::string &algorithm_name,
-                               const std::vector<BenchmarkData> &bdata);
+    static void save_time_data(const std::string &file_name, const std::vector<BenchmarkData> &bdata);
 
 };
 

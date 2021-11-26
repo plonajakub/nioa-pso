@@ -31,10 +31,14 @@ public:
         return sqrt(var);
     }
 
+    // positive = over reference
+    // negative = under reference
     static long double absolute_error(long double reference_value, long double current_value) {
         return current_value - reference_value;
     }
 
+    // positive = over reference
+    // negative = under reference
     // In %
     static long double relative_error(long double reference_value, long double current_value) {
         return Utils::absolute_error(reference_value, current_value) / reference_value * 100;

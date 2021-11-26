@@ -1,25 +1,25 @@
 #include "BenchmarkServices.h"
+
 #include "DataLoader.h"
+#include "Solver.h"
+#include "Utils.h"
 
 #include <iostream>
 #include <fstream>
 #include <chrono>
-#include <algorithm>
-
-#include "Solver.h"
-#include "Utils.h"
 
 using std::cout;
 using std::endl;
 
+
 void BenchmarkServices::run() {
-    auto mkp_instances = DataLoader::load_mknap2("../data/mknap2.txt", {0, 1, 2, 3, 4, 5, 6, 7, 8, 19, 47});
+    auto mkp_instances = DataLoader::load_mknap2("../data/mknap2.txt", {0, 1, 2, 19, 45, 46, 47});
 
     auto greedy_time_data = benchmark_algorithm(mkp_instances, Solver::greedy, "greedy");
-    save_time_data("greedy", "Greedy Algorithm", greedy_time_data);
+    save_time_data("greedy", greedy_time_data);
 
     auto particle_swarm_time_data = benchmark_algorithm(mkp_instances, Solver::particle_swarm, "particle_swarm");
-    save_time_data("particle_swarm", "Particle Swarm Optimization", particle_swarm_time_data);
+    save_time_data("particle_swarm", particle_swarm_time_data);
 }
 
 std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vector<MKPInstance> &mkp_instances,
@@ -30,16 +30,16 @@ std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vec
     cout << std::string(10, '-') << "Benchmark of \"" + algorithm_name + "\"" + " started"
          << std::string(10, '-') << endl;
 
-    MKPSolution found_solution;
     std::vector<BenchmarkData> bdata;
-    BenchmarkData instance_bdata;
     for (const auto &mkp_instance: mkp_instances) {
         std::cout << "Processing instance " << mkp_instance.id;
+        BenchmarkData instance_bdata;
         instance_bdata.problem_id = mkp_instance.id;
         instance_bdata.known_optimum = mkp_instance.known_optimum;
         instance_bdata.n_dimensions = mkp_instance.n_dimensions;
         instance_bdata.n_objects = mkp_instance.n_objects;
         for (int repeats = 0; repeats < TEST_REPETITIONS_NUMBER; ++repeats) {
+            MKPSolution found_solution;
             double time = count_time([&]() -> void {
                 found_solution = mkp_algorithm(mkp_instance, SolverSettings());
             });
@@ -47,11 +47,14 @@ std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vec
             instance_bdata.times.push_back(time);
             cout << '.';
         }
+        bdata.push_back(instance_bdata);
+
         auto default_precision = cout.precision();
         cout.precision(2);
         cout << endl;
         cout << "Elapsed time [ms]: " << Utils::mean(instance_bdata.times) << " +- "
              << Utils::stddev(instance_bdata.times) << endl;
+
         std::vector<long double> relative_errors;
         for (const auto &el: instance_bdata.best_found_solutions) {
             relative_errors.push_back(Utils::relative_error(instance_bdata.known_optimum, el));
@@ -61,9 +64,6 @@ std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vec
              << endl;
         cout << endl;
         cout.precision(default_precision);
-
-        bdata.push_back(instance_bdata);
-        instance_bdata = BenchmarkData();
     }
     cout << std::string(10, '-') << "Benchmark of \"" + algorithm_name + "\"" + " finished"
          << std::string(10, '-') << endl;
@@ -80,8 +80,7 @@ double BenchmarkServices::count_time(const std::function<void()> &function) {
     return elapsed.count();
 }
 
-void BenchmarkServices::save_time_data(const std::string &file_name, const std::string &algorithm_name,
-                                       const std::vector<BenchmarkData> &bdata) {
+void BenchmarkServices::save_time_data(const std::string &file_name, const std::vector<BenchmarkData> &bdata) {
     const char sep = ',';
     const std::string benchmark_file_name = file_name + "_benchmark.csv";
 
