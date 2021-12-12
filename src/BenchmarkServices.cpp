@@ -13,13 +13,13 @@ using std::endl;
 
 
 void BenchmarkServices::run() {
-    auto mkp_instances = DataLoader::load_mknap2("../data/mknap2.txt", {0, 1, 2, 19, 45, 46, 47});
+    auto mkp_instances = DataLoader::load_mknap2("../data/mknap2.txt", {});
 
     auto greedy_time_data = benchmark_algorithm(mkp_instances, Solver::greedy, "greedy");
     save_time_data("greedy", greedy_time_data);
 
-    auto particle_swarm_time_data = benchmark_algorithm(mkp_instances, Solver::particle_swarm, "particle_swarm");
-    save_time_data("particle_swarm", particle_swarm_time_data);
+//    auto particle_swarm_time_data = benchmark_algorithm(mkp_instances, Solver::particle_swarm, "particle_swarm");
+//    save_time_data("particle_swarm", particle_swarm_time_data);
 }
 
 std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vector<MKPInstance> &mkp_instances,
