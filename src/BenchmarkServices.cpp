@@ -15,11 +15,11 @@ using std::endl;
 void BenchmarkServices::run() {
     auto mkp_instances = DataLoader::load_mknap2("../data/mknap2.txt", {});
 
-    auto greedy_time_data = benchmark_algorithm(mkp_instances, Solver::greedy, "greedy");
-    save_time_data("greedy", greedy_time_data);
+//    auto greedy_time_data = benchmark_algorithm(mkp_instances, Solver::greedy, "greedy");
+//    save_time_data("greedy", greedy_time_data);
 
-//    auto particle_swarm_time_data = benchmark_algorithm(mkp_instances, Solver::particle_swarm, "particle_swarm");
-//    save_time_data("particle_swarm", particle_swarm_time_data);
+    auto particle_swarm_time_data = benchmark_algorithm(mkp_instances, Solver::particle_swarm, "particle_swarm");
+    save_time_data("particle_swarm", particle_swarm_time_data);
 }
 
 std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vector<MKPInstance> &mkp_instances,
@@ -43,6 +43,11 @@ std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vec
             double time = count_time([&]() -> void {
                 found_solution = mkp_algorithm(mkp_instance, SolverSettings());
             });
+//            cout << "Solution: ";
+//            for (auto el : found_solution.objects) {
+//                cout << el << " ";
+//            }
+//            cout << endl << "Total value: " << found_solution.total_value << endl;
             instance_bdata.best_found_solutions.push_back(found_solution.total_value);
             instance_bdata.times.push_back(time);
             cout << '.';

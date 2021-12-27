@@ -15,6 +15,7 @@ struct MKPInstance {
 
 struct MKPSolution {
     std::vector<bool> objects;
+    std::vector<int> dimension_sizes;
     int total_value;
 };
 

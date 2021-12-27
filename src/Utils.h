@@ -2,6 +2,7 @@
 #define NIOA_PSO_UTILS_H
 
 #include <vector>
+#include <cmath>
 
 
 class Utils {
@@ -42,6 +43,16 @@ public:
     // In %
     static long double relative_error(long double reference_value, long double current_value) {
         return Utils::absolute_error(reference_value, current_value) / reference_value * 100;
+    }
+
+    static double sigmoid(double x) {
+        return 1.0 / (1.0 + std::exp(-x));
+    }
+
+    static double clip(double x, double left, double right) {
+        if (x > right) { return right; }
+        else if (x < left) { return left; }
+        else { return x; }
     }
 };
 
