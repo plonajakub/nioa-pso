@@ -11,6 +11,7 @@ public:
 private:
     static void repair_solution(MKPSolution &solution, const std::vector<int> &objects_priority_list,
                                 const MKPInstance &mkp_instance);
+    static bool check_solution(const MKPSolution &solution, const MKPInstance &mkp_instance, bool skip_dim_cap_check);
 };
 
 

@@ -4,6 +4,7 @@
 
 #include <thread>
 #include <chrono>
+#include <cassert>
 
 using namespace std::chrono_literals;
 
@@ -96,6 +97,7 @@ MKPSolution Solver::particle_swarm(const MKPInstance &mkp_instance, const Solver
                 }
             }
         }
+        assert(check_solution(particle, mkp_instance, false));
     }
 
     std::vector<std::vector<double>> velocities(settings.n_particles, std::vector<double>(mkp_instance.n_objects));
@@ -120,7 +122,8 @@ MKPSolution Solver::particle_swarm(const MKPInstance &mkp_instance, const Solver
                 double local_change = settings.velocity_local_param * (local_obj_state - current_obj_state);
                 double global_change = settings.velocity_global_param * (global_obj_state - current_obj_state);
                 velocities[ptc_i][obj_i] += local_change + global_change;
-                velocities[ptc_i][obj_i] = Utils::clip(velocities[ptc_i][obj_i], -settings.max_velocity, settings.max_velocity);
+                velocities[ptc_i][obj_i] = Utils::clip(velocities[ptc_i][obj_i], -settings.max_velocity,
+                                                       settings.max_velocity);
             }
         }
         for (int ptc_i = 0; ptc_i < settings.n_particles; ++ptc_i) {
@@ -142,8 +145,10 @@ MKPSolution Solver::particle_swarm(const MKPInstance &mkp_instance, const Solver
                         }
                     }
                 }
+                assert(check_solution(particles[ptc_i], mkp_instance, true));
             }
             repair_solution(particles[ptc_i], obj_priority_list, mkp_instance);
+            assert(check_solution(particles[ptc_i], mkp_instance, false));
             if (particles[ptc_i].total_value > particles_best[ptc_i].total_value) {
                 particles_best[ptc_i] = particles[ptc_i];
             }
@@ -168,7 +173,7 @@ void Solver::repair_solution(MKPSolution &solution, const std::vector<int> &obje
             }
         }
         // find first included object according to priority list
-        while (remove_obj_plist_i >=0 && !solution.objects[objects_priority_list[remove_obj_plist_i]]) {
+        while (remove_obj_plist_i >= 0 && !solution.objects[objects_priority_list[remove_obj_plist_i]]) {
             --remove_obj_plist_i;
         }
         if (apply_drop) {
@@ -201,4 +206,35 @@ void Solver::repair_solution(MKPSolution &solution, const std::vector<int> &obje
             solution.dimension_sizes[dim_i] += mkp_instance.object_sizes[dim_i][add_obj_i];
         }
     }
+}
+
+bool Solver::check_solution(const MKPSolution &solution, const MKPInstance &mkp_instance, bool skip_dim_cap_check) {
+    assert(mkp_instance.n_objects == solution.objects.size());
+
+    int true_total_value = 0;
+    for (int obj_i = 0; obj_i < mkp_instance.n_objects; ++obj_i) {
+        assert(0 <= mkp_instance.object_values[obj_i]);
+        if (solution.objects[obj_i]) {
+            true_total_value += mkp_instance.object_values[obj_i];
+        }
+    }
+    assert(true_total_value == solution.total_value);
+
+    std::vector<int> true_dimension_sizes(mkp_instance.n_dimensions, 0);
+    for (int obj_i = 0; obj_i < mkp_instance.n_objects; ++obj_i) {
+        for (int dim_i = 0; dim_i < mkp_instance.n_dimensions; ++dim_i) {
+            assert(0 <= mkp_instance.object_sizes[dim_i][obj_i]);
+            if (solution.objects[obj_i]) {
+                true_dimension_sizes[dim_i] += mkp_instance.object_sizes[dim_i][obj_i];
+            }
+        }
+    }
+    assert(true_dimension_sizes == solution.dimension_sizes);
+
+    if (!skip_dim_cap_check) {
+        for (int dim_i = 0; dim_i < mkp_instance.n_dimensions; ++dim_i) {
+            assert(mkp_instance.dimension_capacities[dim_i] >= solution.dimension_sizes[dim_i]);
+        }
+    }
+    return true;
 }
