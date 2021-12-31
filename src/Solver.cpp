@@ -1,12 +1,7 @@
 #include "Solver.h"
 #include <vector>
 #include <algorithm>
-
-#include <thread>
-#include <chrono>
 #include <cassert>
-
-using namespace std::chrono_literals;
 
 #include "mkp.h"
 #include "Random.h"
@@ -80,16 +75,16 @@ MKPSolution Solver::particle_swarm(const MKPInstance &mkp_instance, const Solver
         particle.dimension_sizes = std::vector<int>(mkp_instance.n_dimensions, 0);
         particle.total_value = 0;
         for (int obj_i = 0; obj_i < mkp_instance.n_objects; ++obj_i) {
-            if (Random::getRealClosed(0, 1) < 0.5) {
-                bool continue_loop = false;
-                for (int dim_i = 0; dim_i < mkp_instance.n_dimensions; ++dim_i) {
-                    if (particle.dimension_sizes[dim_i] + mkp_instance.object_sizes[dim_i][obj_i] >
-                        mkp_instance.dimension_capacities[dim_i]) {
-                        continue_loop = true;
-                        break;
-                    }
+            bool continue_loop = false;
+            for (int dim_i = 0; dim_i < mkp_instance.n_dimensions; ++dim_i) {
+                if (particle.dimension_sizes[dim_i] + mkp_instance.object_sizes[dim_i][obj_i] >
+                    mkp_instance.dimension_capacities[dim_i]) {
+                    continue_loop = true;
+                    break;
                 }
-                if (continue_loop) { continue; }
+            }
+            if (continue_loop) { continue; }
+            if (Random::getRealClosed(0, 1) < 0.5) {
                 particle.objects[obj_i] = true;
                 particle.total_value += mkp_instance.object_values[obj_i];
                 for (int dim_i = 0; dim_i < mkp_instance.n_dimensions; ++dim_i) {
@@ -124,10 +119,6 @@ MKPSolution Solver::particle_swarm(const MKPInstance &mkp_instance, const Solver
                 velocities[ptc_i][obj_i] += local_change + global_change;
                 velocities[ptc_i][obj_i] = Utils::clip(velocities[ptc_i][obj_i], -settings.max_velocity,
                                                        settings.max_velocity);
-            }
-        }
-        for (int ptc_i = 0; ptc_i < settings.n_particles; ++ptc_i) {
-            for (int obj_i = 0; obj_i < mkp_instance.n_objects; ++obj_i) {
                 if (Random::getRealClosed(0, 1) <= Utils::sigmoid(velocities[ptc_i][obj_i])) {
                     if (!particles[ptc_i].objects[obj_i]) {
                         particles[ptc_i].objects[obj_i] = true;
@@ -145,8 +136,8 @@ MKPSolution Solver::particle_swarm(const MKPInstance &mkp_instance, const Solver
                         }
                     }
                 }
-                assert(check_solution(particles[ptc_i], mkp_instance, true));
             }
+            assert(check_solution(particles[ptc_i], mkp_instance, true));
             repair_solution(particles[ptc_i], obj_priority_list, mkp_instance);
             assert(check_solution(particles[ptc_i], mkp_instance, false));
             if (particles[ptc_i].total_value > particles_best[ptc_i].total_value) {
@@ -172,16 +163,17 @@ void Solver::repair_solution(MKPSolution &solution, const std::vector<int> &obje
                 break;
             }
         }
-        // find first included object according to priority list
-        while (remove_obj_plist_i >= 0 && !solution.objects[objects_priority_list[remove_obj_plist_i]]) {
-            --remove_obj_plist_i;
-        }
         if (apply_drop) {
+            // find first included object according to priority list
+            while (!solution.objects[objects_priority_list[remove_obj_plist_i]]) {
+                --remove_obj_plist_i;
+            }
             solution.objects[objects_priority_list[remove_obj_plist_i]] = false;
             solution.total_value -= mkp_instance.object_values[objects_priority_list[remove_obj_plist_i]];
             for (int dim_i = 0; dim_i < mkp_instance.n_dimensions; ++dim_i) {
                 solution.dimension_sizes[dim_i] -= mkp_instance.object_sizes[dim_i][objects_priority_list[remove_obj_plist_i]];
             }
+            --remove_obj_plist_i;
         } else { break; }
     }
 
