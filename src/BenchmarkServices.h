@@ -16,7 +16,8 @@ struct BenchmarkData {
     std::vector<double> times;
     std::vector<int> best_found_solutions; // target function value
 
-    BenchmarkData() : problem_id{-1}, known_optimum{0}, n_dimensions{0}, n_objects{0}, times{}, best_found_solutions{} {}
+    BenchmarkData() : problem_id{-1}, known_optimum{0}, n_dimensions{0}, n_objects{0}, times{},
+                      best_found_solutions{} {}
 };
 
 
@@ -28,12 +29,14 @@ public:
 
 private:
 
-    static const int TEST_REPETITIONS_NUMBER = 30;
+    static const int TEST_REPETITIONS_NUMBER = 40;
 
-    static std::vector<BenchmarkData> benchmark_algorithm(const std::vector<MKPInstance> &mkp_instances,
-                                                          MKPSolution (*mkp_algorithm)(const MKPInstance &mkp_instance,
-                                                                                   const SolverSettings &settings),
-                                                          const std::string &algorithm_name);
+    static std::vector<BenchmarkData> benchmark_algorithm(const std::string &algorithm_name,
+                                                          MKPSolution (*mkp_algorithm)(
+                                                                  const MKPInstance &,
+                                                                  const SolverSettings &),
+                                                          const std::vector<MKPInstance> &mkp_instances,
+                                                          const SolverSettings &s_settings);
 
     static double count_time(const std::function<void()> &function);
 

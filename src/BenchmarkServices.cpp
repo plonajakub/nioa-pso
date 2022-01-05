@@ -15,18 +15,66 @@ using std::endl;
 void BenchmarkServices::run() {
     auto mkp_instances = DataLoader::load_mknap2("../data/mknap2.txt", {});
 
-    auto greedy_time_data = benchmark_algorithm(mkp_instances, Solver::greedy, "greedy");
-    save_time_data("greedy", greedy_time_data);
+    auto greedy_time_data = benchmark_algorithm("greedy__default", Solver::greedy, mkp_instances, SolverSettings());
+    save_time_data("greedy__default", greedy_time_data);
 
-    auto particle_swarm_time_data = benchmark_algorithm(mkp_instances, Solver::particle_swarm, "particle_swarm");
-    save_time_data("particle_swarm", particle_swarm_time_data);
+    auto particle_swarm_time_data = benchmark_algorithm("particle_swarm__default", Solver::particle_swarm,
+                                                        mkp_instances, SolverSettings());
+    save_time_data("particle_swarm__default", particle_swarm_time_data);
+
+    int test_iteration_values[] = {100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000};
+    for (auto tiv: test_iteration_values) {
+        SolverSettings settings;
+        settings.n_iterations = tiv;
+        auto pstd = benchmark_algorithm("particle_swarm__iter_" + std::to_string(tiv), Solver::particle_swarm,
+                                        mkp_instances, settings);
+        save_time_data("particle_swarm__iter_" + std::to_string(tiv), pstd);
+    }
+
+    int test_particle_values[] = {5, 25, 50, 75, 100, 125, 150, 175, 200, 250, 300};
+    for (auto tpv: test_particle_values) {
+        SolverSettings settings;
+        settings.n_particles = tpv;
+        auto pstd = benchmark_algorithm("particle_swarm__ptc_" + std::to_string(tpv), Solver::particle_swarm,
+                                        mkp_instances, settings);
+        save_time_data("particle_swarm__ptc_" + std::to_string(tpv), pstd);
+    }
+
+    double test_velocity_values[] = {0.1, 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 3.0, 5.0, 7.0, 10.0, 15.0, 20.0};
+    for (auto tvv: test_velocity_values) {
+        SolverSettings settings;
+        settings.max_velocity = tvv;
+        auto tvv_str = std::to_string(tvv);
+        tvv_str.replace(tvv_str.find('.'), 1, "-");
+        auto pstd = benchmark_algorithm("particle_swarm__mv_" + tvv_str, Solver::particle_swarm,
+                                        mkp_instances, settings);
+        save_time_data("particle_swarm__mv_" + tvv_str, pstd);
+    }
+
+    double test_velocity_local_values[] = {0.01, 0.05, 0.15, 0.25, 0.5, 1, 1.5, 2};
+    double test_velocity_global_values[] = {0.01, 0.05, 0.15, 0.25, 0.5, 1, 1.5, 2};
+    for (auto tvlv: test_velocity_local_values) {
+        for (auto tvgv: test_velocity_global_values) {
+            SolverSettings settings;
+            settings.velocity_local_param = tvlv;
+            auto tvlv_str = std::to_string(tvlv);
+            tvlv_str.replace(tvlv_str.find('.'), 1, "-");
+            settings.velocity_global_param = tvgv;
+            auto tvgv_str = std::to_string(tvgv);
+            tvgv_str.replace(tvgv_str.find('.'), 1, "-");
+            auto pstd = benchmark_algorithm("particle_swarm__vl_" + tvlv_str + "__vg_" + tvgv_str,
+                                            Solver::particle_swarm, mkp_instances, settings);
+            save_time_data("particle_swarm__vl_" + tvlv_str + "__vg_" + tvgv_str, pstd);
+        }
+    }
 }
 
-std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vector<MKPInstance> &mkp_instances,
+std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::string &algorithm_name,
                                                                   MKPSolution (*mkp_algorithm)(
-                                                                          const MKPInstance &mkp_instance,
-                                                                          const SolverSettings &settings),
-                                                                  const std::string &algorithm_name) {
+                                                                          const MKPInstance &,
+                                                                          const SolverSettings &),
+                                                                  const std::vector<MKPInstance> &mkp_instances,
+                                                                  const SolverSettings &s_settings) {
     cout << std::string(10, '-') << "Benchmark of \"" + algorithm_name + "\"" + " started"
          << std::string(10, '-') << endl;
 
@@ -41,7 +89,7 @@ std::vector<BenchmarkData> BenchmarkServices::benchmark_algorithm(const std::vec
         for (int repeats = 0; repeats < TEST_REPETITIONS_NUMBER; ++repeats) {
             MKPSolution found_solution;
             double time = count_time([&]() -> void {
-                found_solution = mkp_algorithm(mkp_instance, SolverSettings());
+                found_solution = mkp_algorithm(mkp_instance, s_settings);
             });
 //            cout << "Solution: ";
 //            for (auto el : found_solution.objects) {
@@ -87,7 +135,7 @@ double BenchmarkServices::count_time(const std::function<void()> &function) {
 
 void BenchmarkServices::save_time_data(const std::string &file_name, const std::vector<BenchmarkData> &bdata) {
     const char sep = ',';
-    const std::string benchmark_file_name = file_name + "_benchmark.csv";
+    const std::string benchmark_file_name = file_name + "__benchmark.csv";
 
     std::ofstream benchmark_file("../benchmark_results/" + benchmark_file_name);
     if (!benchmark_file.is_open()) {
