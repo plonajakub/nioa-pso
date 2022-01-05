@@ -13,7 +13,7 @@ using std::endl;
 
 
 void BenchmarkServices::run() {
-    auto mkp_instances = DataLoader::load_mknap2("../data/mknap2.txt", {});
+    auto mkp_instances = DataLoader::load_mknap2("../data/mknap2.txt", {1, 2, 8, 12, 26, 38, 40, 43});
 
     auto greedy_time_data = benchmark_algorithm("greedy__default", Solver::greedy, mkp_instances, SolverSettings());
     save_time_data("greedy__default", greedy_time_data);
