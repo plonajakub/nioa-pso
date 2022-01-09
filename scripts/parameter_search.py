@@ -62,16 +62,16 @@ def main():
         plt.close()
 
     pval_np = np.array(data_points['vl_vg']['p_val'])
-    xlabels = np.unique(pval_np[:, 0])
-    ylabels = np.unique(pval_np[:, 1])
+    ylabels = np.unique(pval_np[:, 0])
+    xlabels = np.unique(pval_np[:, 1])
 
     iter_num = 0
-    for xl in xlabels:
-        for yl in ylabels:
-            assert data_points['vl_vg']['p_val'][iter_num][0] == xl
-            assert data_points['vl_vg']['p_val'][iter_num][1] == yl
-            assert pval_np[iter_num, 0] == xl
-            assert pval_np[iter_num, 1] == yl
+    for yl in xlabels:
+        for xl in ylabels:
+            assert data_points['vl_vg']['p_val'][iter_num][0] == yl
+            assert data_points['vl_vg']['p_val'][iter_num][1] == xl
+            assert pval_np[iter_num, 0] == yl
+            assert pval_np[iter_num, 1] == xl
             iter_num += 1
 
     plot_heatmap(xlabels, ylabels, data_points['vl_vg']['mean_err'], tested_instances, 'Błąd względny [%]', 'err')
@@ -124,20 +124,20 @@ def plot_heatmap(xlabels, ylabels, raw_values, tested_instances, title, file_end
     std_values = std_values.reshape((len(ylabels), len(xlabels)))
 
     for map_type_i, map_type in enumerate(['Średnia', 'Odchylenie standardowe']):
-        axs[map_type_i].imshow(mean_values)
+        values = mean_values if map_type == 'Średnia' else std_values
+        axs[map_type_i].imshow(values)
         axs[map_type_i].set_xticks(np.arange(len(xlabels)), labels=xlabels)
         axs[map_type_i].set_yticks(np.arange(len(ylabels)), labels=ylabels)
         plt.setp(axs[map_type_i].get_xticklabels(), rotation=45, ha="right",
                  rotation_mode="anchor")
         for i in range(len(ylabels)):
             for j in range(len(xlabels)):
-                values = mean_values if map_type == 'Średnia' else std_values
                 axs[map_type_i].text(j, i, np.format_float_scientific(values[i, j], 2),
                                      ha="center", va="center", color="w")
         axs[map_type_i].set_title(map_type)
 
-    fig.supxlabel('Mnożnik prędkości globalnej')
-    fig.supylabel('Mnożnik prędkosci lokalnej')
+    fig.supxlabel('Parametr globalnej zmiany prędkości')
+    fig.supylabel('Parametr lokalnej zmiany prędkości')
     fig.suptitle(title)
 
     plt.tight_layout()
