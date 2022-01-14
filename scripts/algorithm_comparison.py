@@ -4,7 +4,8 @@ from scipy.stats import wilcoxon
 
 def main():
     gd_results = pd.read_csv('../benchmark_results/greedy__default__benchmark.csv')
-    pso_results = pd.read_csv('../benchmark_results/particle_swarm__default__benchmark.csv')
+    # pso_results = pd.read_csv('../benchmark_results/particle_swarm__default__benchmark.csv')
+    pso_results = pd.read_csv('../benchmark_results/particle_swarm__second__benchmark.csv')
     instances = gd_results['Instance ID'].unique()
     assert list(pso_results['Instance ID'].unique()) == list(instances)
     alg_keys = ['gd', 'pso']
@@ -30,14 +31,19 @@ def main():
 
         row['gd_win'] = 0
         row['pso_win'] = 0
-        stat, p_val = wilcoxon(results_gd_iid['error'].tolist(), results_pso_iid['error'].tolist())
+        try:
+            stat, p_val = wilcoxon(results_gd_iid['error'].tolist(), results_pso_iid['error'].tolist())
+            wilcoxon_success = True
+        except ValueError as err:
+            stat, p_val = -1, -1
+            wilcoxon_success = False
         row['stat'] = stat
         row['p_val'] = p_val
-        if p_val < alpha:
+        if wilcoxon_success and p_val < alpha:
             if results_gd_iid['error'].median() > results_pso_iid['error'].median():
-                row['gd_win'] = 1
-            else:
                 row['pso_win'] = 1
+            else:
+                row['gd_win'] = 1
 
         test_results = test_results.append(row, ignore_index=True)
         row = {}
