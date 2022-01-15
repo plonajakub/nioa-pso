@@ -1,5 +1,7 @@
+import numpy as np
 import pandas as pd
 from scipy.stats import wilcoxon
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -16,7 +18,8 @@ def main():
                                     results[alg_key]['Known optimum'] * 100
 
     test_results = pd.DataFrame(
-        columns=['Instance ID', 'stat', 'p_val', 'gd_win', 'pso_win', 'gd_median', 'pso_median', 'gd_mean', 'pso_mean'])
+        columns=['Instance ID', 'stat', 'p_val', 'gd_win', 'pso_win', 'gd_median', 'pso_median', 'gd_mean', 'gd_std',
+                 'pso_mean', 'pso_std'])
     alpha = 0.05
 
     row = {}
@@ -27,7 +30,9 @@ def main():
         row['gd_median'] = results_gd_iid['error'].median()
         row['pso_median'] = results_pso_iid['error'].median()
         row['gd_mean'] = results_gd_iid['error'].mean()
+        row['gd_std'] = results_gd_iid['error'].std()
         row['pso_mean'] = results_pso_iid['error'].mean()
+        row['pso_std'] = results_pso_iid['error'].std()
 
         row['gd_win'] = 0
         row['pso_win'] = 0
@@ -54,7 +59,17 @@ def main():
     with pd.option_context('display.max_rows', None, 'display.max_columns', None):
         print(test_results)
 
-    test_results.to_csv('test_results.csv')
+    test_results.to_csv('test_results.csv', float_format='{0:.1e}'.format)
+
+    wins = test_results[['gd_win', 'pso_win']].values
+    gd_wins = np.count_nonzero(wins[:, 0])
+    pso_wins = np.count_nonzero(wins[:, 1])
+    draws = np.count_nonzero(wins[:, 0] == wins[:, 1])
+    plt.bar([1, 2, 3], height=[gd_wins, draws, pso_wins], tick_label=['Wygrane Greedy', 'Remisy', 'Wygrane PSO'])
+    plt.ylabel('Liczba instancji testowych')
+    plt.title('Wyniki testu Wilcoxona dla wszystkich instancji testowych')
+    plt.savefig('wilcoxon_bar')
+    plt.close()
 
 
 if __name__ == '__main__':
