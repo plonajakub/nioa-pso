@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 
 def main():
     gd_results = pd.read_csv('../benchmark_results/greedy__default__benchmark.csv')
-    # pso_results = pd.read_csv('../benchmark_results/particle_swarm__default__benchmark.csv')
-    pso_results = pd.read_csv('../benchmark_results/particle_swarm__second__benchmark.csv')
+    pso_results = pd.read_csv('../benchmark_results/particle_swarm__default__benchmark.csv')
+    # pso_results = pd.read_csv('../benchmark_results/particle_swarm__second__benchmark.csv')
     instances = gd_results['Instance ID'].unique()
     assert list(pso_results['Instance ID'].unique()) == list(instances)
     alg_keys = ['gd', 'pso']

@@ -19,7 +19,7 @@ def main():
 
     for file in os.listdir(directory):
         filename = os.fsdecode(file)
-        if 'default' in filename or 'placeholder' in filename:
+        if 'default' in filename or 'second' in filename or 'placeholder' in filename:
             continue
         filename_split = filename.split(sep='__')
         p_name, p_value = filename_split[1].split(sep='_')
